@@ -2,7 +2,8 @@ name: Apply room v6 patch on test branch
 on:
   push:
     branches: [szoba-v6-teszt]
-    paths: [szoba_v6_frissites.json.gz]
+    paths:
+      - 'szoba_v6_frissites.part*'
   workflow_dispatch:
 jobs:
   apply:
@@ -13,12 +14,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: szoba-v6-teszt
+      - name: Reassemble and validate patch
+        run: |
+          cat szoba_v6_frissites.part* | base64 --decode > szoba_v6_frissites.json.gz
+          python -c "import gzip,json; p=json.load(gzip.open('szoba_v6_frissites.json.gz','rt')); assert {'line','old_length','new_length','edits'} <= p.keys()"
       - name: Apply verified v6 patch
         run: python szoba_v6_frissites_alkalmazasa.py
+      - name: Verify generated model
+        run: |
+          echo "4aeabb2b4a7618d96f3a86dfb8837732cb0d17507a4b19c23ceb28f291452aba  index.html" | sha256sum -c -
       - name: Commit updated room only to test branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git diff --cached --quiet || git commit -m "Apply room v6 model patch"
-          git push origin HEAD:szoba-v6-teszt
+          if ! git diff --cached --quiet; then
+            git commit -m "Apply verified room v6 model patch"
+            git push origin HEAD:szoba-v6-teszt
+          fi
