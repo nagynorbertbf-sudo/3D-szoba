@@ -1,11 +1,13 @@
-<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Szoba – valósághű 3D előnézet</title><style>body{margin:0;background:#101318;color:white;font:14px system-ui}#ui{position:absolute;z-index:2;top:12px;left:12px;background:#15191ddd;padding:12px;border-radius:12px;max-width:300px}button{background:#343c46;color:white;border:1px solid #69717c;border-radius:7px;padding:9px;margin:3px}small{color:#c5cbd1}canvas{display:block}</style></head><body><div id="ui"><b>3D szoba – látványterv v1</b><div><button id="overview">Felülnézet</button><button id="door">Ajtóból</button><button id="walls">Falak ki/be</button></div><small>Ujjal forgatható és nagyítható. Méretek cm-ben, az eredeti alaprajz szerint. A bútorfrontok részletei szemléltető jellegűek.</small></div><script type="module">
+<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Szoba – valósághű 3D előnézet</title><style>body{margin:0;background:#101318;color:white;font:14px system-ui}#ui{position:absolute;z-index:2;top:12px;left:12px;background:#15191ddd;padding:12px;border-radius:12px;max-width:300px}button{background:#343c46;color:white;border:1px solid #69717c;border-radius:7px;padding:9px;margin:3px}small{color:#c5cbd1}canvas{display:block}</style></head><body><div id="ui"><b>3D szoba – látványterv v1</b><div><button id="overview">Felülnézet</button><button id="door">Ajtóból</button><button id="walls">Falak ki/be</button></div><small>Ujjal forgatható és nagyítható. Méretek cm-ben, az eredeti alaprajz szerint. A bútorfrontok részletei szemléltető jellegűek. Új: famintázat, ágynemű, bútorfogantyúk, szegélyek és finomabb világítás.</small></div><script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/controls/OrbitControls.js';
 const scene=new THREE.Scene();scene.background=new THREE.Color('#cbd0d2');
 const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.01,50);camera.position.set(3.8,4.5,5.9);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.45;document.body.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(1.45,.65,2.05);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2.02;controls.update();
-const mat=(c,r=0.8)=>new THREE.MeshStandardMaterial({color:c,roughness:r});const wall=mat('#25292c'),floor=mat('#9c7d5f'),black=mat('#121416'),oak=mat('#a47a51'),anth=mat('#363b40'),metal=mat('#656b70',.35),white=mat('#e7e4dd'),fabric=mat('#777d83'),glass=new THREE.MeshPhysicalMaterial({color:'#a4d0e2',transparent:true,opacity:.33,roughness:.15,metalness:.1});
+function woodTexture(){const c=document.createElement('canvas');c.width=256;c.height=512;const g=c.getContext('2d');g.fillStyle='#b18a64';g.fillRect(0,0,256,512);for(let i=0;i<650;i++){let x=Math.random()*256,y=Math.random()*512;g.strokeStyle=i%3?'rgba(58,34,18,.08)':'rgba(255,235,194,.11)';g.lineWidth=.3+Math.random()*1.5;g.beginPath();g.moveTo(x,y);g.bezierCurveTo(x+Math.random()*8,y+30,x-Math.random()*8,y+90,x+Math.random()*3,y+130);g.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,5);t.colorSpace=THREE.SRGBColorSpace;return t}
+const grain=woodTexture();const timber=new THREE.MeshStandardMaterial({map:grain,roughness:.78});
+const mat=(c,r=0.8)=>new THREE.MeshStandardMaterial({color:c,roughness:r});const wall=mat('#25292c'),floor=timber,black=mat('#121416'),oak=new THREE.MeshStandardMaterial({map:grain,color:'#c6a580',roughness:.72}),anth=mat('#363b40'),metal=mat('#656b70',.35),white=mat('#e7e4dd'),fabric=mat('#777d83'),glass=new THREE.MeshPhysicalMaterial({color:'#a4d0e2',transparent:true,opacity:.33,roughness:.15,metalness:.1});
 function box(x,y,z,w,h,d,m,shadow=true){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x+w/2,y+h/2,z+d/2);o.castShadow=shadow;o.receiveShadow=true;scene.add(o);return o}
 function cm(x){return x/100}
 box(0,-.08,0,2.9,.08,4.1,floor);
@@ -21,20 +23,34 @@ box(.01,0,.01,.585,2.15,1.49,anth);box(.598,.08,.03,.015,2.02,.71,black);box(.59
 // desk x=230..290, z=0..120
 box(2.3,.73,0,.6,.045,1.2,black);for(let z of [.07,1.07])for(let x of [2.34,2.78])box(x,0,z,.045,.73,.045,metal);
 // bed x=1.7..207.7 z=170..295, exterior 206x125
-box(.017,0,1.7,2.06,.41,1.25,black);box(.08,.41,1.76,1.91,.16,1.13,white);box(.017,.41,1.7,.045,.39,1.25,black);box(.16,.57,1.8,.65,.08,.55,fabric);box(.16,.57,2.38,.65,.08,.46,fabric);
+box(.017,0,1.7,2.06,.41,1.25,black);box(.08,.41,1.76,1.91,.16,1.13,white);box(.76,.575,1.78,1.20,.035,1.10,fabric);box(.017,.41,1.7,.045,.39,1.25,black);box(.16,.57,1.8,.65,.08,.55,fabric);box(.16,.57,2.38,.65,.08,.46,fabric);
+// mattress seam, padded headboard panels and bedding
+for(let z=1.73;z<2.94;z+=.25)box(.021,.44,z,.014,.34,.008,mat('#242628'));
+box(.12,.59,1.86,.55,.065,.35,white);box(.12,.59,2.40,.55,.065,.35,white);
+// wardrobe sliding-door rails and slim handles
+box(.612,.065,.03,.012,.012,1.44,metal);box(.612,2.1,.03,.012,.012,1.44,metal);
+box(.619,.8,.69,.012,.72,.016,metal);box(.619,.8,.80,.012,.72,.016,metal);
+// desk cable grommet and desktop accessories
+box(2.50,.777,.20,.14,.012,.30,anth);box(2.47,.79,.31,.20,.12,.015,black);
+box(2.43,.778,.63,.31,.014,.18,anth);
 // 150cm slats along left wall z=157.5..307.5, 1.7cm depth
 for(let z=1.575;z<3.075;z+=.072)box(.001,.08,z,.017,1.95,.043,oak);
 // Malaga rotated footprint x=1.7..41.7 z=295..375; 75cm high
 box(.017,0,2.95,.4,.75,.8,anth);box(.017,.73,2.95,.4,.02,.8,oak);
-for(let i=0;i<3;i++)box(.418,.12+i*.18,3.36,.009,.17,.38,oak);box(.418,.1,2.97,.009,.6,.36,anth);
+for(let i=0;i<3;i++){box(.418,.12+i*.18,3.36,.009,.17,.38,oak);box(.428,.18+i*.18,3.49,.009,.009,.13,metal)}box(.418,.1,2.97,.009,.6,.36,anth);
 // Thal corner unit: back diagonal 60cm and front 114cm, 36cm inset
 const q=Math.sqrt(2),rearA=new THREE.Vector2(2.9-.6/q,4.1),rearB=new THREE.Vector2(2.9,4.1-.6/q);
 const mid=rearA.clone().add(rearB).multiplyScalar(.5);const frontMid=mid.clone().add(new THREE.Vector2(-.36/q,-.36/q));
 const v=new THREE.Vector2(1/q,-1/q);const p1=frontMid.clone().sub(v.clone().multiplyScalar(.57)),p2=frontMid.clone().add(v.clone().multiplyScalar(.57));
 const shape=new THREE.Shape();shape.moveTo(rearA.x,rearA.y);shape.lineTo(rearB.x,rearB.y);shape.lineTo(p2.x,p2.y);shape.lineTo(p1.x,p1.y);shape.closePath();const geo=new THREE.ExtrudeGeometry(shape,{depth:.5,bevelEnabled:false});geo.rotateX(-Math.PI/2);geo.translate(0,.5,0);const unit=new THREE.Mesh(geo,oak);unit.castShadow=true;unit.receiveShadow=true;scene.add(unit);
+// baseboards and small rug to suggest lived-in proportions
+box(.04,0,.03,.025,.085,4.02,white);box(2.835,0,.03,.025,.085,4.02,white);
+box(2.12,.003,1.45,.58,.012,1.45,mat('#aaa59b'));
 // window frame and warm lighting
 box(.4,.95,4.14,1.7,.035,.035,white);box(.4,2.09,4.14,1.7,.035,.035,white);box(1.23,.95,4.14,.035,1.17,.035,white);
 scene.add(new THREE.HemisphereLight(0xe5f3ff,0x796452,2.2));const sun=new THREE.DirectionalLight(0xffedcf,3.3);sun.position.set(-2,5,6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-7;sun.shadow.camera.right=7;sun.shadow.camera.top=7;sun.shadow.camera.bottom=-7;scene.add(sun);
+// subtle ceiling fixture
+box(1.23,2.49,1.8,.44,.045,.44,white);
 const lamp=new THREE.PointLight(0xffc58b,32,5);lamp.position.set(1.5,2.3,2);scene.add(lamp);
 document.getElementById('walls').onclick=()=>{walls.forEach(w=>w.visible=!w.visible)};
 document.getElementById('overview').onclick=()=>{camera.position.set(1.45,6.8,2.05);controls.target.set(1.45,0,2.05);controls.update()};
