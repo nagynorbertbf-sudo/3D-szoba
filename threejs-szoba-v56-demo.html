@@ -143,9 +143,9 @@ const demoStops=[
  {t:60,p:[145,165,150],look:[145,125,300]}
 ];
 // V55: fixed soundtrack, served from this repository next to the HTML file.
-const demoAudio=new Audio('./this-is-luxury%20(1).mp3');
+const demoAudio=new Audio('./this-is-luxury%20%281%29.mp3');
 demoAudio.preload='auto';demoAudio.volume=0;
-demoAudio.addEventListener('error',()=>{document.getElementById('status').textContent='A demózene még nincs feltöltve: this-is-luxury.mp3';});
+demoAudio.addEventListener('error',()=>{document.getElementById('status').textContent='Nem sikerült betölteni a demózenét: this-is-luxury (1).mp3';});
 function stopDemoMusic(){demoAudio.pause();demoAudio.currentTime=0;demoAudio.volume=0;}
 function startDemoMusic(){demoAudio.pause();demoAudio.currentTime=0;demoAudio.volume=0;demoAudio.play().catch(()=>{document.getElementById('status').textContent='A demózene nem tölthető be. A kamerabemutató ettől még működik.';});}
 function updateDemoMusic(t){if(demoAudio.paused)return;const fadeIn=Math.min(1,t/3),fadeOut=Math.min(1,(60-t)/4);demoAudio.volume=Math.max(0,Math.min(.65,.65*fadeIn*fadeOut));}
